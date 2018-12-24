@@ -4,17 +4,13 @@
 
 Snake::Snake(float x, float y)
 {
-    SnakeJoint *head = new SnakeJoint(SnakeJoint::TypeJoint::head);
-    SnakeJoint *joint = new SnakeJoint(SnakeJoint::TypeJoint::joint);
-    SnakeJoint *tail = new SnakeJoint(SnakeJoint::TypeJoint::tail, SnakeJoint::Direction::top);
-
-    head->setName("H");
-    joint->setName("J1");
-    tail->setName("T");
-
-    this->body.push_back(head);
-    this->body.push_back(joint);
-    this->body.push_back(tail);
+    this->_head = new SnakeJoint("H", SnakeJoint::TypeJoint::head, SnakeJoint::Direction::down);
+    this->_tail = new SnakeJoint("T", SnakeJoint::TypeJoint::tail, SnakeJoint::Direction::top);
+    this->addJoint(_tail);
+    this->addJoint(new SnakeJoint("J1", SnakeJoint::TypeJoint::joint));
+//    this->body.push_back(new SnakeJoint("H", SnakeJoint::TypeJoint::head));
+//    this->body.push_back(new SnakeJoint("J1", SnakeJoint::TypeJoint::joint));
+//    this->body.push_back(new SnakeJoint("T", SnakeJoint::TypeJoint::tail, SnakeJoint::Direction::top));
 
     this->x = x;
     this->y = y;
@@ -22,75 +18,103 @@ Snake::Snake(float x, float y)
 
 void Snake::addJoint(SnakeJoint *joint)
 {
-    this->body.insert(--this->body.end(), joint);
+    SnakeJoint *tmp = this->_head->getNextJount();
+
+    if (tmp != nullptr) {
+        tmp->setPrevJoint(joint);
+    }
+
+
+    joint->setPrevJoint(this->_head);
+    joint->setNextJoint(tmp);
+
+    this->_head->setNextJoint(joint);
+    //this->body.insert(--this->body.end(), joint);
 }
 
-void Snake::update(float time)
+void Snake::update(sf::Keyboard::Key releasedKey)
 {
-    bool updateDir = false;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) & (this->body[0]->dir == SnakeJoint::Direction::top |
-                                                           this->body[0]->dir == SnakeJoint::Direction::down)) {
-        this->body[0]->dir = SnakeJoint::Direction::right;
-        updateDir = true;
+
+    if ((releasedKey == sf::Keyboard::Right) & (this->_head->dir == SnakeJoint::Direction::top |
+                                                           this->_head->dir == SnakeJoint::Direction::down)) {
+        this->_head->dir = SnakeJoint::Direction::right;
+
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) & (this->body[0]->dir == SnakeJoint::Direction::top |
-                                                          this->body[0]->dir == SnakeJoint::Direction::down)) {
-        this->body[0]->dir = SnakeJoint::Direction::left;
-        updateDir = true;
+    if ((releasedKey == sf::Keyboard::Left) & (this->_head->dir == SnakeJoint::Direction::top |
+                                                          this->_head->dir == SnakeJoint::Direction::down)) {
+        this->_head->dir = SnakeJoint::Direction::left;
+
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) & (this->body[0]->dir == SnakeJoint::Direction::left |
-                                                        this->body[0]->dir == SnakeJoint::Direction::right)) {
-        this->body[0]->dir = SnakeJoint::Direction::top;
-        updateDir = true;
+    if ((releasedKey == sf::Keyboard::Up) & (this->_head->dir == SnakeJoint::Direction::left |
+                                                        this->_head->dir == SnakeJoint::Direction::right)) {
+        this->_head->dir = SnakeJoint::Direction::top;
+
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) & (this->body[0]->dir == SnakeJoint::Direction::left |
-                                                        this->body[0]->dir == SnakeJoint::Direction::right)) {
-        this->body[0]->dir = SnakeJoint::Direction::down;
-        updateDir = true;
+    if ((releasedKey == sf::Keyboard::Down) & (this->_head->dir == SnakeJoint::Direction::left |
+                                                        this->_head->dir == SnakeJoint::Direction::right)) {
+        this->_head->dir = SnakeJoint::Direction::down;
+
     }
 
     int dirX = 0;
     int dirY = 0;
 
-    switch (this->body[0]->dir) {
+    switch (this->_head->dir) {
     case SnakeJoint::Direction::right:
     {
         dirX = 1;
+        dirY = 0;
         break;
     }
     case SnakeJoint::Direction::left:
     {
         dirX = -1;
+        dirY = 0;
         break;
     }
     case SnakeJoint::Direction::top:
     {
+        dirX = 0;
         dirY = -1;
         break;
     }
     case SnakeJoint::Direction::down:
     {
+        dirX = 0;
         dirY = 1;
         break;
     }
     }
-    this->x += 48 * dirX * time;
-    this->y += 48 * dirY * time;
 
-    std::cout << time << std::endl;
 
-    if (fmodf(this->x, 48.f) > 44 | fmodf(this->y, 48.f) > 44) {
-        for (auto i = this->body.size() - 1; i > 0; i--) {
-            SnakeJoint::Direction nextDir = this->body[i-1]->dir;
+    float dx = 48 * dirX;
+    float dy = 48 * dirY;
 
-            //std::string tmp = this->body[i]->name;
-            //std::cout << "dir " << i << " " << tmp << " " << this->body[i]->dir << "->" << nextDir << std::endl;
-            this->body[i]->dir = nextDir;
-            //curSnakeJoint->dir = prevSnakeJoint->dir;
 
+    std::cout << ceilf(this->x / 48.f) - ceilf((this->x + releasedKey) / 48.f) << std::endl;
+
+    //if (ceilf(this->x / 48.f) - ceilf((this->x + releasedKey) / 48.f) < 0 | ceilf(this->y / 48.f) - ceilf((this->y + dy) / 48.f) < 0) {
+
+        SnakeJoint *curSnakeJoint = this->_tail;
+        while(curSnakeJoint != this->_head){
+            curSnakeJoint->update();
+            curSnakeJoint = curSnakeJoint->getPrevJount();
         }
-    }
+
+//        for (auto i = this->body.size() - 1; i > 0; i--) {
+//            SnakeJoint::Direction nextDir = this->body[i-1]->dir;
+
+//            //std::string tmp = this->body[i]->name;
+//            //std::cout << "dir " << i << " " << tmp << " " << this->body[i]->dir << "->" << nextDir << std::endl;
+//            this->body[i]->dir = nextDir;
+//            //curSnakeJoint->dir = prevSnakeJoint->dir;
+
+//        }
+    //}
+
+    this->x += dx;
+    this->y += dy;
 }
 
 
@@ -99,7 +123,8 @@ void Snake::draw(sf::RenderTarget &target, sf::RenderStates states) const
     float angle;
     float xOffset = 0;
     float yOffset = 0;
-    switch (this->body[0]->dir) {
+    //switch (this->body[0]->dir) {
+    switch (this->_head->dir) {
     case SnakeJoint::Direction::right:
     {
         xOffset = 48.f;
@@ -135,9 +160,10 @@ void Snake::draw(sf::RenderTarget &target, sf::RenderStates states) const
     states.transform.rotate(angle);
 
 
-
-    for (unsigned int i = 0; i < this->body.size(); ++i) {
-        SnakeJoint *curSnakeJoint = this->body[i];
+     SnakeJoint *curSnakeJoint = this->_head;
+    //for (unsigned int i = 0; i < this->body.size(); ++i) {
+     while(curSnakeJoint != nullptr){
+        //SnakeJoint *curSnakeJoint = this->body[i];
         sf::Transform mv = sf::Transform();
         std::string direct = "";
 
@@ -154,8 +180,9 @@ void Snake::draw(sf::RenderTarget &target, sf::RenderStates states) const
         }
         case SnakeJoint::Direction::left:
         {
-            direct = "left";
+
             if (angle != 180) {
+                direct = "left";
                 mv.rotate(180 - angle);
                 angle += 180 - angle;
             }
@@ -206,5 +233,6 @@ void Snake::draw(sf::RenderTarget &target, sf::RenderStates states) const
 
         states.transform *= mv;
         target.draw(*curSnakeJoint, states);
+        curSnakeJoint = curSnakeJoint->getNextJount();
     }
 }

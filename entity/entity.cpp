@@ -16,6 +16,14 @@ void Entity::draw(sf::RenderTarget &target, sf::RenderStates states) const
     states.transform *= getTransform();
     target.draw(_shape, states);
 
+    sf::RectangleShape ox({48, 2});
+    ox.setPosition(-24,24);
+    ox.setFillColor(sf::Color::Red);
+    sf::RectangleShape oy({2, 48});
+    oy.setPosition(-24,-24);
+    oy.setFillColor(sf::Color::Green);
+    //ox.setOrigin(48.f/2, 48.f/2);
+
     sf::ConvexShape arrowTriangle;
     arrowTriangle.setPointCount(3);
     arrowTriangle.setPoint(0, {42, 24});
@@ -35,6 +43,8 @@ void Entity::draw(sf::RenderTarget &target, sf::RenderStates states) const
     text.setFillColor(sf::Color::Blue);
     text.setOrigin(48.f/2 - 10, 48.f/2 - 4);
 
+//    target.draw(ox, states);
+//    target.draw(oy, states);
     target.draw(arrowTriangle, states);
     target.draw(arrowRectangle, states);
     target.draw(text, states);

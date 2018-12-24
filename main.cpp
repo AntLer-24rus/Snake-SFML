@@ -7,7 +7,8 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML works!");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Snake");
+    window.setVerticalSyncEnabled(true);
 
     sf::RectangleShape shape(sf::Vector2f(48.f, 48.f));
     shape.setPosition(24 + 48 * 6, 24 +  48 * 6);
@@ -20,8 +21,7 @@ int main()
     joint2->dir = SnakeJoint::Direction::top;
     snake.addJoint(joint2);
 
-    SnakeJoint *joint3 = new SnakeJoint();
-    joint3->setName("J3");
+    SnakeJoint *joint3 = new SnakeJoint("J3");
     //joint3->dir = SnakeJoint::Direction::left;
     snake.addJoint(joint3);
 
@@ -42,14 +42,18 @@ int main()
 
     float dx;
     float dy;
+    dx = 48;
+    dy = 0;
     sf::Clock clock;
+    sf::Keyboard::Key releasedKey = sf::Keyboard::Unknown;
+
+
+
     while (window.isOpen())
     {
-        float time = clock.getElapsedTime().asMicroseconds();
-        clock.restart();
-        time /= 300000;
-        dx = 0;
-        dy = 0;
+
+//        dx = 0;
+//        dy = 0;
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -62,25 +66,30 @@ int main()
             }
             case sf::Event::KeyReleased:
             {
+                releasedKey = event.key.code;
                 switch (event.key.code) {
                 case sf::Keyboard::Up:
                 {
+                    dx = 0;
                     dy = -48;
                     break;
                 }
                 case sf::Keyboard::Down:
                 {
+                    dx = 0;
                     dy = 48;
                     break;
                 }
                 case sf::Keyboard::Left:
                 {
                     dx = -48;
+                    dy = 0;
                     break;
                 }
                 case sf::Keyboard::Right:
                 {
                     dx = 48;
+                    dy = 0;
                     break;
                 }
                 }
@@ -90,11 +99,17 @@ int main()
 
         }
 
-        snake.update(time);
+        float time = clock.getElapsedTime().asMicroseconds();
+        if (time >= 200000) {
+            clock.restart();
+            snake.update(releasedKey);
+            releasedKey = sf::Keyboard::Unknown;
+        }
+
+        //time /= 300000;
+
 
         window.clear();
-
-        window.draw(shape);
 
         window.draw(snake);
 

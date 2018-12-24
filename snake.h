@@ -11,12 +11,18 @@ public:
     std::vector<SnakeJoint*> body;
     float x;
     float y;
+
+
+
     Snake(float x, float y);
 
     void addJoint(SnakeJoint *joint);
-    void update(float time);
-    // Drawable interface
+    void update(sf::Keyboard::Key releasedKey);
+private:
+    SnakeJoint *_head;
+    SnakeJoint *_tail;
 protected:
+    // Drawable interface
     void draw(sf::RenderTarget &target, sf::RenderStates states) const;
 };
 
