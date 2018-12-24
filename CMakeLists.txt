@@ -5,10 +5,14 @@ project(SnakeSFML VERSION 0.0.0.1 LANGUAGES C CXX)
 
 
 set(HEADERS
-        entity/entity.h)
+        entity/entity.h
+        snake.h
+        snakejoint.h)
 set(SOURCES
         entity/entity.cpp
-        main.cpp)
+        main.cpp
+        snake.cpp
+        snakejoint.cpp)
 
 
 add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})

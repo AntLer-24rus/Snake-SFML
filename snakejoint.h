@@ -1,11 +1,12 @@
-#ifndef SNAKEJOINT_H
-#define SNAKEJOINT_H
+#pragma once
 
+#include "entity/entity.h"
 
-class SnakeJoint
+class SnakeJoint : public Entity
 {
 public:
-    SnakeJoint();
+    enum TypeJoint {head, joint, tail} typeJoint;
+    enum Direction {left, right, top, down} dir;
+public:
+    SnakeJoint(TypeJoint typeJoint = TypeJoint::joint, Direction dir = Direction::right);
 };
-
-#endif // SNAKEJOINT_H
